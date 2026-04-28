@@ -61,7 +61,9 @@ wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 sudo apt install -y ./google-chrome-stable_current_amd64.deb
 rm -f google-chrome-stable_current_amd64.deb # Limpiamos el .deb residual
 
+echo "🖌️ instalando wallpapers y variety para personalización"
 sudo apt install -y variety
+git clone https://github.com/victorcarrillodev/wallpapers.git ~/
 
 #?
 echo "👨‍💻 Instalando herramientas de desarrollo, Docker y utilidades de seguridad..."
