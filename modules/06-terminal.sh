@@ -65,6 +65,23 @@ fi
 fc-cache -fv
 success "Caché de fuentes actualizada."
 
+# --- Wave Terminal ---
+info "🌊 Instalando Wave Terminal..."
+if ! command -v wave &>/dev/null; then
+    WAVE_DEB="$(mktemp /tmp/waveterm-XXXXXX.deb)"
+    if curl -fsSL --retry 3 --retry-delay 2 \
+        -o "${WAVE_DEB}" \
+        "https://github.com/wavetermdev/waveterm/releases/latest/download/waveterm-linux-x64.deb"; then
+        sudo env DEBIAN_FRONTEND=noninteractive apt install -y "${WAVE_DEB}"
+        success "Wave Terminal instalado."
+    else
+        warn "No se pudo descargar Wave Terminal. Verifica conexión."
+    fi
+    rm -f "${WAVE_DEB}"
+else
+    warn "Wave Terminal ya instalado, omitiendo."
+fi
+
 # --- Powerlevel10k y Plugins ---
 ZSH_CUSTOM="${ZSH_CUSTOM:-${HOME}/.oh-my-zsh/custom}"
 
