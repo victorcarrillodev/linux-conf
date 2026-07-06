@@ -22,20 +22,21 @@ FONT_DIR="${HOME}/.local/share/fonts"
 mkdir -p "${FONT_DIR}"
 NERD_FONTS_BASE="https://github.com/ryanoasis/nerd-fonts/releases/latest/download"
 
-# CascadiaCode Nerd Font
+# CascadiaCode Nerd Font (en nerd-fonts se distribuye como "CaskaydiaCove Nerd Font")
 info "🔤 Descargando CascadiaCode Nerd Font..."
 CASCADIA_TMP="$(mktemp /tmp/cascadia-XXXXXX.tar.xz)"
 if curl -fsSL --retry 3 --retry-delay 2 -o "${CASCADIA_TMP}" "${NERD_FONTS_BASE}/CascadiaCode.tar.xz"; then
     tar -xJf "${CASCADIA_TMP}" -C "${FONT_DIR}" 2>/dev/null
-    CASCADIA_COUNT="$(find "${FONT_DIR}" -maxdepth 1 \( -name "CascadiaCode*" -o -name "Cascadia*Code*" \) 2>/dev/null | wc -l)"
-    success "CascadiaCode: ${CASCADIA_COUNT} archivos instalados."
+    CASCADIA_COUNT="$(find "${FONT_DIR}" -maxdepth 1 -iname "CaskaydiaCove*" 2>/dev/null | wc -l)"
+    success "CascadiaCode (Caskaydia Cove NF): ${CASCADIA_COUNT} archivos instalados."
 else
     warn "No se pudo descargar CascadiaCode. Verifica conexión."
 fi
 rm -f "${CASCADIA_TMP}"
 
 # MesloLGS NF (necesaria para Powerlevel10k)
-MESLO_BASE="https://github.com/romkatv/dotfiles-public/raw/master/.local/share/fonts/MesloLGS%20NF"
+# Fuente canonical de p10k: repo romkatv/powerlevel10k-media
+MESLO_BASE="https://github.com/romkatv/powerlevel10k-media/raw/master"
 
 declare -A MESLO_FONTS=(
     ["MesloLGS NF Regular.ttf"]="${MESLO_BASE}/MesloLGS%20NF%20Regular.ttf"
