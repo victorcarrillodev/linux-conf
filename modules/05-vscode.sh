@@ -15,8 +15,9 @@ sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null \
     <<< "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main"
 
 info "📝 Configurando repositorio de Antigravity..."
-sudo curl -fsSL -o /etc/apt/keyrings/antigravity-repo-key.gpg \
-    https://us-central1-apt.pkg.dev/doc/repo-signing-key.gpg
+sudo curl -fsSL https://us-central1-apt.pkg.dev/doc/repo-signing-key.gpg \
+    | sudo gpg --dearmor --yes -o /etc/apt/keyrings/antigravity-repo-key.gpg
+sudo chmod a+r /etc/apt/keyrings/antigravity-repo-key.gpg
 
 sudo tee /etc/apt/sources.list.d/antigravity.list > /dev/null \
     <<< "deb [signed-by=/etc/apt/keyrings/antigravity-repo-key.gpg] https://us-central1-apt.pkg.dev/projects/antigravity-auto-updater-dev/ antigravity-debian main"
