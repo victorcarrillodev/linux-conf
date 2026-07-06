@@ -7,6 +7,7 @@ source "${SCRIPT_DIR}/lib/common.sh"
 
 # MODULE_DESC: Visual Studio Code y Antigravity
 info "📝 Configurando repositorio de VS Code..."
+sudo mkdir -p /etc/apt/keyrings
 wget -qO- https://packages.microsoft.com/keys/microsoft.asc | \
     sudo gpg --dearmor --yes -o /etc/apt/keyrings/packages.microsoft.gpg
 
@@ -14,7 +15,6 @@ sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null \
     <<< "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main"
 
 info "📝 Configurando repositorio de Antigravity..."
-sudo mkdir -p /etc/apt/keyrings
 sudo curl -fsSL -o /etc/apt/keyrings/antigravity-repo-key.gpg \
     https://us-central1-apt.pkg.dev/doc/repo-signing-key.gpg
 

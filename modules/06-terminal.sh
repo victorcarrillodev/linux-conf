@@ -27,7 +27,7 @@ info "🔤 Descargando CascadiaCode Nerd Font..."
 CASCADIA_TMP="$(mktemp /tmp/cascadia-XXXXXX.tar.xz)"
 if curl -fsSL --retry 3 --retry-delay 2 -o "${CASCADIA_TMP}" "${NERD_FONTS_BASE}/CascadiaCode.tar.xz"; then
     tar -xJf "${CASCADIA_TMP}" -C "${FONT_DIR}" 2>/dev/null
-    CASCADIA_COUNT="$(find "${FONT_DIR}" -maxdepth 1 -name "CascadiaCode*" -o -name "Cascadia*Code*" 2>/dev/null | wc -l)"
+    CASCADIA_COUNT="$(find "${FONT_DIR}" -maxdepth 1 \( -name "CascadiaCode*" -o -name "Cascadia*Code*" \) 2>/dev/null | wc -l)"
     success "CascadiaCode: ${CASCADIA_COUNT} archivos instalados."
 else
     warn "No se pudo descargar CascadiaCode. Verifica conexión."
@@ -98,34 +98,56 @@ ZSH_CUSTOM="${ZSH_CUSTOM:-${HOME}/.oh-my-zsh/custom}"
         "${ZSH_CUSTOM}/plugins/zsh-syntax-highlighting"
 
 # --- Configurar .zshrc: tema y plugins ---
+# Powerlevel10k (con fallback si ~/.zshrc no trae el tema por defecto)
 if grep -q 'ZSH_THEME="robbyrussell"' ~/.zshrc; then
     sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="powerlevel10k\/powerlevel10k"/' ~/.zshrc
-fi
-if grep -q 'plugins=(git)' ~/.zshrc; then
-    sed -i 's/plugins=(git)/plugins=(git zsh-autosuggestions zsh-syntax-highlighting docker docker-compose python)/' ~/.zshrc
+    success "Tema cambiado a Powerlevel10k."
+elif ! grep -q 'ZSH_THEME="powerlevel10k/powerlevel10k"' ~/.zshrc; then
+    sed -i '1i ZSH_THEME="powerlevel10k/powerlevel10k"' ~/.zshrc
+    warn "No se encontró ZSH_THEME en ~/.zshrc; se insertó Powerlevel10k al inicio."
 fi
 
-# --- Agregar PATHs de NVM, pnpm y Bun a .zshrc ---
-NVM_BLOCK='# ------ NVM INIT ------
+# Plugins (con fallback si la línea no es la estándar 'plugins=(git)')
+if grep -q 'plugins=(git)' ~/.zshrc; then
+    sed -i 's/plugins=(git)/plugins=(git zsh-autosuggestions zsh-syntax-highlighting docker docker-compose python)/' ~/.zshrc
+    success "Plugins agregados a ~/.zshrc."
+elif ! grep -q 'zsh-autosuggestions' ~/.zshrc; then
+    sed -i 's/^plugins=(.*)/plugins=(git zsh-autosuggestions zsh-syntax-highlighting docker docker-compose python)/' ~/.zshrc
+    warn "Plugins reemplazados en ~/.zshrc."
+fi
+
+# --- Agregar PATHs de NVM, pnpm y Bun a .zshrc (bloques multi-línea reales) ---
+# NOTA: se usan heredocs con delimitador entrecomillado para que los saltos de
+# línea y las barras invertidas (\.) se conserven literales en el archivo.
+NVM_BLOCK="$(cat <<'NVM_EOF'
+# ------ NVM INIT ------
 export NVM_DIR="${HOME}/.nvm"
 [ -s "${NVM_DIR}/nvm.sh" ] && \. "${NVM_DIR}/nvm.sh"
 [ -s "${NVM_DIR}/bash_completion" ] && \. "${NVM_DIR}/bash_completion"
-# ------ END NVM INIT ------'
+# ------ END NVM INIT ------
+NVM_EOF
+)"
 append_zshrc_block "# ------ NVM INIT ------" "${NVM_BLOCK}"
 
-PNPM_BLOCK='# ------ PNPM PATH ------
+PNPM_BLOCK="$(cat <<'PNPM_EOF'
+# ------ PNPM PATH ------
 export PNPM_HOME="${HOME}/.local/share/pnpm"
 case ":${PATH}:" in
   *":${PNPM_HOME}:"*) ;;
   *) export PATH="${PNPM_HOME}:${PATH}" ;;
 esac
-# ------ END PNPM PATH ------'
+# ------ END PNPM PATH ------
+PNPM_EOF
+)"
 append_zshrc_block "# ------ PNPM PATH ------" "${PNPM_BLOCK}"
 
-BUN_BLOCK='# ------ BUN PATH ------
+BUN_BLOCK="$(cat <<'BUN_EOF'
+# ------ BUN PATH ------
 export BUN_INSTALL="${HOME}/.bun"
 export PATH="${BUN_INSTALL}/bin:${PATH}"
-# ------ END BUN PATH ------'
+# ------ END BUN PATH ------
+BUN_EOF
+)"
 append_zshrc_block "# ------ BUN PATH ------" "${BUN_BLOCK}"
 
 # --- Banner ---

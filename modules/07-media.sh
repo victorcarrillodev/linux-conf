@@ -7,12 +7,13 @@ source "${SCRIPT_DIR}/lib/common.sh"
 
 # MODULE_DESC: LibreOffice, codecs multimedia, VLC y MPV
 info "📄 Instalando LibreOffice..."
-if ! dpkg-query -W -f='${Status}' libreoffice-fresh 2>/dev/null | grep -q 'install ok installed'; then
-    sudo add-apt-repository -y ppa:libreoffice/ppa
-    sudo apt update
-    sudo apt install -y \
-        libreoffice-fresh \
-        libreoffice-fresh-es \
+sudo add-apt-repository -y ppa:libreoffice/ppa
+sudo apt update
+if ! dpkg-query -W -f='${Status}' libreoffice-core 2>/dev/null | grep -q 'install ok installed'; then
+    sudo DEBIAN_FRONTEND=noninteractive apt install -y \
+        libreoffice \
+        libreoffice-l10n-es \
+        libreoffice-help-es \
         libreoffice-style-sukapura
     success "LibreOffice instalado correctamente."
 else
