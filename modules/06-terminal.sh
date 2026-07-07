@@ -117,6 +117,16 @@ elif ! grep -q 'zsh-autosuggestions' ~/.zshrc; then
     warn "Plugins reemplazados en ~/.zshrc."
 fi
 
+# --- Evitar salida durante instant prompt de Powerlevel10k ---
+# Si no se ha definido, insertar al inicio de ~/.zshrc la opción quiet
+# para que Powerlevel10k no muestre la advertencia por I/O en init.
+if ! grep -q 'POWERLEVEL9K_INSTANT_PROMPT' "${HOME}/.zshrc" 2>/dev/null; then
+    sed -i '1i typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet' "${HOME}/.zshrc"
+    success "Se añadió POWERLEVEL9K_INSTANT_PROMPT=quiet a ~/.zshrc"
+else
+    warn "POWERLEVEL9K_INSTANT_PROMPT ya está definido en ~/.zshrc; omitiendo."
+fi
+
 # --- Agregar PATHs de NVM, pnpm y Bun a .zshrc (bloques multi-línea reales) ---
 # NOTA: se usan heredocs con delimitador entrecomillado para que los saltos de
 # línea y las barras invertidas (\.) se conserven literales en el archivo.
