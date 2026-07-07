@@ -110,10 +110,10 @@ fi
 
 # Plugins (con fallback si la línea no es la estándar 'plugins=(git)')
 if grep -q 'plugins=(git)' ~/.zshrc; then
-    sed -i 's/plugins=(git)/plugins=(git zsh-autosuggestions zsh-syntax-highlighting docker docker-compose python)/' ~/.zshrc
+    sed -i 's/plugins=(git)/plugins=(git zsh-autosuggestions zsh-syntax-highlighting web-search emoji docker docker-compose python)/' ~/.zshrc
     success "Plugins agregados a ~/.zshrc."
 elif ! grep -q 'zsh-autosuggestions' ~/.zshrc; then
-    sed -i 's/^plugins=(.*)/plugins=(git zsh-autosuggestions zsh-syntax-highlighting docker docker-compose python)/' ~/.zshrc
+    sed -i 's/^plugins=(.*)/plugins=(git zsh-autosuggestions zsh-syntax-highlighting web-search emoji docker docker-compose python)/' ~/.zshrc
     warn "Plugins reemplazados en ~/.zshrc."
 fi
 
