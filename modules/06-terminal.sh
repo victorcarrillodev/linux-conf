@@ -109,12 +109,15 @@ elif ! grep -q 'ZSH_THEME="powerlevel10k/powerlevel10k"' ~/.zshrc; then
 fi
 
 # Plugins (con fallback si la línea no es la estándar 'plugins=(git)')
-if grep -q 'plugins=(git)' ~/.zshrc; then
-    sed -i 's/plugins=(git)/plugins=(git zsh-autosuggestions zsh-syntax-highlighting web-search emoji docker docker-compose python)/' ~/.zshrc
-    success "Plugins agregados a ~/.zshrc."
-elif ! grep -q 'zsh-autosuggestions' ~/.zshrc; then
-    sed -i 's/^plugins=(.*)/plugins=(git zsh-autosuggestions zsh-syntax-highlighting web-search emoji docker docker-compose python)/' ~/.zshrc
-    warn "Plugins reemplazados en ~/.zshrc."
+if ! grep -q 'web-search' ~/.zshrc 2>/dev/null; then
+    if grep -Eq '^plugins=\(' ~/.zshrc 2>/dev/null; then
+        sed -i 's/^plugins=(.*)$/plugins=(\1 web-search)/' ~/.zshrc
+    else
+        printf '\nplugins=(git zsh-autosuggestions zsh-syntax-highlighting web-search docker docker-compose python)\n' >> ~/.zshrc
+    fi
+    success "Plugin web-search añadido a ~/.zshrc."
+else
+    success "Plugins verificados en ~/.zshrc."
 fi
 
 # --- Control de Instant Prompt de Powerlevel10k ---
@@ -127,6 +130,14 @@ else
     sed -i '1i typeset -g POWERLEVEL9K_INSTANT_PROMPT=off' "${HOME}/.zshrc"
     success "Se añadió POWERLEVEL9K_INSTANT_PROMPT=off a ~/.zshrc"
 fi
+
+info "🔧 Asegurando PATH para Bash y Zsh..."
+for rc_file in "${HOME}/.profile" "${HOME}/.bashrc" "${HOME}/.zshrc"; do
+    ensure_path_entry "${HOME}/.local/bin" "${rc_file}" "# >>> linux-conf PATH ${HOME}/.local/bin >>>"
+    ensure_path_entry "${HOME}/.cargo/bin" "${rc_file}" "# >>> linux-conf PATH ${HOME}/.cargo/bin >>>"
+    ensure_path_entry "${HOME}/.bun/bin" "${rc_file}" "# >>> linux-conf PATH ${HOME}/.bun/bin >>>"
+    ensure_path_entry "${HOME}/.local/share/pnpm" "${rc_file}" "# >>> linux-conf PATH ${HOME}/.local/share/pnpm >>>"
+done
 
 # --- Agregar PATHs de NVM, pnpm y Bun a .zshrc (bloques multi-línea reales) ---
 # NOTA: se usan heredocs con delimitador entrecomillado para que los saltos de

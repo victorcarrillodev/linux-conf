@@ -25,3 +25,33 @@ append_zshrc_block() {
         warn "Bloque '${marker}' ya presente en ~/.zshrc, omitiendo."
     fi
 }
+
+ensure_path_entry() {
+    local dir="$1"
+    local rc_file="${2:-${HOME}/.profile}"
+    local marker="${3:-# >>> linux-conf PATH ${dir} >>>}"
+
+    [ -n "${dir}" ] || return 0
+    mkdir -p "${dir}"
+
+    case ":${PATH}:" in
+        *":${dir}:"*) ;;
+        *) export PATH="${dir}:${PATH}" ;;
+    esac
+
+    if [ ! -f "${rc_file}" ]; then
+        touch "${rc_file}"
+    fi
+
+    if ! grep -Fq "${marker}" "${rc_file}" 2>/dev/null; then
+        cat >> "${rc_file}" <<EOF
+${marker}
+case ":\\${PATH}:" in
+  *":${dir}:"*) ;;
+  *) export PATH="${dir}:\\${PATH}" ;;
+esac
+# <<< linux-conf PATH ${dir} <<<
+EOF
+        success "Ruta '${dir}' añadida a ${rc_file}"
+    fi
+}

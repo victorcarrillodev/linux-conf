@@ -47,7 +47,27 @@ curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
 info "🔗 Instalando Tailscale..."
 curl -fsSL https://tailscale.com/install.sh | sh
 
-info "💡 NOTA: Los PATHs de NVM, pnpm, Bun y los AI CLIs se agregarán"
-info "       a ~/.zshrc cuando ejecutes el módulo 06 (Terminal / Oh My Zsh)."
+info "� Asegurando que los binarios estén disponibles en el PATH..."
+for rc_file in "${HOME}/.profile" "${HOME}/.bashrc" "${HOME}/.zshrc"; do
+    ensure_path_entry "${HOME}/.local/bin" "${rc_file}" "# >>> linux-conf PATH ${HOME}/.local/bin >>>"
+    ensure_path_entry "${HOME}/.cargo/bin" "${rc_file}" "# >>> linux-conf PATH ${HOME}/.cargo/bin >>>"
+    ensure_path_entry "${HOME}/.bun/bin" "${rc_file}" "# >>> linux-conf PATH ${HOME}/.bun/bin >>>"
+    ensure_path_entry "${HOME}/.local/share/pnpm" "${rc_file}" "# >>> linux-conf PATH ${HOME}/.local/share/pnpm >>>"
+done
+
+if command -v npm >/dev/null 2>&1; then
+    npm_prefix="$(npm config get prefix 2>/dev/null || true)"
+    if [ -n "${npm_prefix}" ]; then
+        npm_bin="${npm_prefix}/bin"
+        if [ -d "${npm_bin}" ]; then
+            for rc_file in "${HOME}/.profile" "${HOME}/.bashrc" "${HOME}/.zshrc"; do
+                ensure_path_entry "${npm_bin}" "${rc_file}" "# >>> linux-conf PATH ${npm_bin} >>>"
+            done
+        fi
+    fi
+fi
+
+info "💡 NOTA: Los PATHs de NVM, pnpm, Bun y los AI CLIs se agregan también"
+info "       a ~/.profile, ~/.bashrc y ~/.zshrc para que funcionen en nuevas terminales."
 
 success "Módulo 03 — Herramientas de desarrollo completado."
