@@ -117,14 +117,15 @@ elif ! grep -q 'zsh-autosuggestions' ~/.zshrc; then
     warn "Plugins reemplazados en ~/.zshrc."
 fi
 
-# --- Evitar salida durante instant prompt de Powerlevel10k ---
-# Si no se ha definido, insertar al inicio de ~/.zshrc la opción quiet
-# para que Powerlevel10k no muestre la advertencia por I/O en init.
-if ! grep -q 'POWERLEVEL9K_INSTANT_PROMPT' "${HOME}/.zshrc" 2>/dev/null; then
-    sed -i '1i typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet' "${HOME}/.zshrc"
-    success "Se añadió POWERLEVEL9K_INSTANT_PROMPT=quiet a ~/.zshrc"
+# --- Control de Instant Prompt de Powerlevel10k ---
+# Para evitar advertencias y que el banner siempre se muestre sin 'saltos',
+# forzamos `POWERLEVEL9K_INSTANT_PROMPT=off` (desactiva instant prompt).
+if grep -q 'POWERLEVEL9K_INSTANT_PROMPT' "${HOME}/.zshrc" 2>/dev/null; then
+    sed -i 's/^.*POWERLEVEL9K_INSTANT_PROMPT=.*$/typeset -g POWERLEVEL9K_INSTANT_PROMPT=off/' "${HOME}/.zshrc"
+    success "POWERLEVEL9K_INSTANT_PROMPT actualizado a 'off' en ~/.zshrc"
 else
-    warn "POWERLEVEL9K_INSTANT_PROMPT ya está definido en ~/.zshrc; omitiendo."
+    sed -i '1i typeset -g POWERLEVEL9K_INSTANT_PROMPT=off' "${HOME}/.zshrc"
+    success "Se añadió POWERLEVEL9K_INSTANT_PROMPT=off a ~/.zshrc"
 fi
 
 # --- Agregar PATHs de NVM, pnpm y Bun a .zshrc (bloques multi-línea reales) ---
