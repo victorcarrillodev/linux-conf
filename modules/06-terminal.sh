@@ -7,7 +7,7 @@ source "${SCRIPT_DIR}/lib/common.sh"
 
 # MODULE_DESC: Zsh, Oh My Zsh, Powerlevel10k, fuentes, banner y shell por defecto
 info "💻 Configurando Zsh y herramientas visuales..."
-sudo apt install -y zsh fonts-font-awesome figlet toilet lolcat
+sudo -S -p '' apt install -y zsh fonts-font-awesome figlet toilet lolcat
 
 # --- Oh My Zsh ---
 if [ ! -d "${HOME}/.oh-my-zsh" ]; then
@@ -69,16 +69,29 @@ success "Caché de fuentes actualizada."
 # --- Wave Terminal ---
 info "🌊 Instalando Wave Terminal..."
 if ! command -v wave &>/dev/null; then
-    WAVE_DEB="$(mktemp /tmp/waveterm-XXXXXX.deb)"
-    if curl -fsSL --retry 3 --retry-delay 2 \
-        -o "${WAVE_DEB}" \
-        "https://github.com/wavetermdev/waveterm/releases/latest/download/waveterm-linux-x64.deb"; then
-        sudo env DEBIAN_FRONTEND=noninteractive apt install -y "${WAVE_DEB}"
-        success "Wave Terminal instalado."
+    # El nombre del paquete cambia según versión/arquitectura, así que lo
+    # resolvemos dinámicamente desde la API de releases de GitHub.
+    case "$(uname -m)" in
+        x86_64)  WAVE_ARCH="amd64" ;;
+        aarch64) WAVE_ARCH="arm64" ;;
+        *)       WAVE_ARCH="amd64" ;;
+    esac
+    WAVE_API="https://api.github.com/repos/wavetermdev/waveterm/releases/latest"
+    ASSET_URL="$(curl -fsSL "${WAVE_API}" \
+        | grep -oE "https://[^\"]*waveterm-linux-${WAVE_ARCH}-[^\"]*\.deb" \
+        | head -1)"
+    if [ -n "${ASSET_URL}" ]; then
+        WAVE_DEB="$(mktemp /tmp/waveterm-XXXXXX.deb)"
+        if curl -fsSL --retry 3 --retry-delay 2 -o "${WAVE_DEB}" "${ASSET_URL}"; then
+            sudo -S -p '' env DEBIAN_FRONTEND=noninteractive apt install -y "${WAVE_DEB}"
+            success "Wave Terminal instalado."
+        else
+            warn "No se pudo descargar Wave Terminal. Verifica conexión."
+        fi
+        rm -f "${WAVE_DEB}"
     else
-        warn "No se pudo descargar Wave Terminal. Verifica conexión."
+        warn "No se encontró un paquete .deb para la arquitectura ${WAVE_ARCH}. Omitiendo Wave Terminal."
     fi
-    rm -f "${WAVE_DEB}"
 else
     warn "Wave Terminal ya instalado, omitiendo."
 fi
@@ -111,7 +124,7 @@ fi
 # Plugins (con fallback si la línea no es la estándar 'plugins=(git)')
 if ! grep -q 'web-search' ~/.zshrc 2>/dev/null; then
     if grep -Eq '^plugins=\(' ~/.zshrc 2>/dev/null; then
-        sed -i 's/^plugins=(.*)$/plugins=(\1 web-search)/' ~/.zshrc
+        sed -i -E 's/^plugins=\((.*)\)$/plugins=(\1 web-search)/' ~/.zshrc
     else
         printf '\nplugins=(git zsh-autosuggestions zsh-syntax-highlighting web-search docker docker-compose python)\n' >> ~/.zshrc
     fi
@@ -209,8 +222,8 @@ fi
 info "🔄 Cambiando shell por defecto a Zsh..."
 ZSH_PATH="$(command -v zsh)"
 if ! grep -qxF "${ZSH_PATH}" /etc/shells 2>/dev/null; then
-    echo "${ZSH_PATH}" | sudo tee -a /etc/shells > /dev/null
+    echo "${ZSH_PATH}" | sudo -S -p '' tee -a /etc/shells > /dev/null
 fi
-sudo chsh -s "${ZSH_PATH}" "${USER}"
+sudo -S -p '' chsh -s "${ZSH_PATH}" "${USER}"
 
 success "Módulo 06 — Terminal completado."
